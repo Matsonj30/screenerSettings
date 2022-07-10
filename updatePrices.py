@@ -1,33 +1,21 @@
+from logging import exception
 from openpyxl import load_workbook
 import yfinance
 import openpyxl
-from yahoo_fin import stock_info
+from yahoo_fin.stock_info import *
 from datetime import date
 
+sheet = load_workbook("D:/Programming/Repositories/screenerSettings/highVolumeTickers.xlsx")
+sheetWrite = sheet.worksheets[0] #starting point??
+index = 1
 
-print(stock_info.get_live_price("BWEN"))
-info = yfinance.Ticker("BWEN")
-print(info.info["dayHigh"]) #can get anything using the brackets, we want to track its highs for the day
-print(info.info)
-
-sheet = load_workbook("D:/Programming/Python/projects/ScreenerUpdates/ScreenerTest.xlsx")
-sheetAlter = sheet.worksheets[0] #starting point??
-
-#goes through the spreadsheet and looks for the right most column thats open, then inserts the date there, and returns the column starting point
-def setDate():
-    startingPoint = 0
-    while sheetAlter.cell(row = 1, column = 8 + startingPoint).value is not None:
-        startingPoint += 1
-    sheetAlter.cell(row = 1, column = 8 + startingPoint).value = date.today()
-    return startingPoint
-
-columnVal = setDate() + 8 #curval we want to check for the day
-curRow = 3
-
-while sheetAlter.cell(row = curRow, column = 1).value is not None:
-    sheetAlter.cell(row = curRow, column = columnVal).value = stock_info.get_live_price(sheetAlter.cell(row = curRow, column = 1).value)
-    curRow += 1
+while(sheetWrite.cell(row = 1, column=index).value != None):
+    if(sheetWrite.cell(row = 20, column=index).value == None): #checking to see if we need to update this ticker anymore
+        for cellYIndex in range(13):
+            if(sheetWrite.cell(row = 8 + cellYIndex, column=index).value == None):
+                sheetWrite.cell(row = 8 + cellYIndex, column=index).value = round(get_live_price(sheetWrite.cell(row = 1, column=index).value),3) #get live price of company
+                break
+    index += 1
 
 
-
-sheet.save("D:/Programming/Python/projects/ScreenerUpdates/ScreenerTest.xlsx")
+sheet.save("D:/Programming/Repositories/screenerSettings/highVolumeTickers.xlsx")
