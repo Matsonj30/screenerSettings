@@ -1,5 +1,4 @@
-from email import header
-from urllib import request
+
 import requests
 import pandas as pd
 from openpyxl import load_workbook
@@ -18,7 +17,6 @@ def startPoint(sheetWrite):
 
 #retrieves finviz screener data 
 def finvizData():
-    print("HERE SOMEHOW")
     sheet = load_workbook("D:/Programming/Repositories/screenerSettings/highVolumeTickers.xlsx")
     sheetWrite = sheet.worksheets[0]
     headers = {'User-Agent': 'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_10_1) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/39.0.2171.95 Safari/537.36'}

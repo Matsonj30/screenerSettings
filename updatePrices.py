@@ -8,8 +8,6 @@ from readScreener import finvizData
 sheet = load_workbook("D:/Programming/Repositories/screenerSettings/highVolumeTickers.xlsx")
 sheetWrite = sheet.worksheets[0] #starting point??
 index = 2
-print("HEREWTF")
-
 while(sheetWrite.cell(row = 1, column=index).value != None):
     if(sheetWrite.cell(row = 20, column=index).value == None): #checking to see if we need to update this ticker anymore
         for cellYIndex in range(13):
