@@ -4,50 +4,71 @@ import pandas as pd
 from openpyxl import load_workbook
 from openpyxl.styles import Color, Fill, Font
 from datetime import date
-
+import pyodbc
 
 #returns the right most column in the excel sheet which is blank
 #this is where we will start inputting new tickers found for the day
 def startPoint(sheetWrite):
-    startingPoint = 0
     colNumber = 1
     while sheetWrite.cell(row = 1, column = colNumber).value != None:
         colNumber += 1
     return colNumber
 
+def writeToSQL(data):
+    file = open("D:\Programming\SecretKeysandPass\serverTest.txt")
+    password = file.readline()
+    connect = pyodbc.connect('DRIVER={SQL Server};SERVER=jaredsdb.database.windows.net;DATABASE=jaredDateBase;UID=matsonj2013@gmail.com@jaredsdb;PWD='+password) #DATABASE != servername
+    cursor = connect.cursor() #THIS WORKS
+    names = data[0]
+
+    # index = 0
+    # for name in names:
+    #     cursor.execute('''INSERT INTO highVolume(ticker, industry, dateFound, volume, mktCap, priceFound
+    #                 VALUES ()
+    #                 )                
+    #                 '''))
+
+
+def writeToExcel(data):
+    sheet = load_workbook("D:/Programming/Repositories/screenerSettings/test.xlsx")
+    sheetWrite = sheet.worksheets[0]
+    startingPoint = startPoint(sheetWrite)
+    index = 1 #this index starts at 0 because the pandas dataset does not have a 0th row
+    names = data[1]
+    
+    #this can be done in less lines but its tricky
+    for name in names:
+        sheetWrite.cell(row = 1, column = startingPoint).value = data[0][index] ##iterate each thing here
+        sheetWrite.cell(row = 2, column = startingPoint).value = data[1][index] ##iterate each thing here
+        sheetWrite.cell(row = 3, column = startingPoint).value = date.today() ##iterate each thing here
+        sheetWrite.cell(row = 4, column = startingPoint).value = data[3][index] ##iterate each thing here
+        sheetWrite.cell(row = 5, column = startingPoint).value = data[4][index] ##iterate each thing here
+        sheetWrite.cell(row = 6, column = startingPoint).value = data[5][index] ##iterate each thing here
+        sheetWrite.cell(row = 7, column = startingPoint).value = data[6][index] ##iterate each thing here
+        index += 1
+        startingPoint += 1
+    sheet.save(("D:/Programming/Repositories/screenerSettings/test.xlsx"))
+
+
 #retrieves finviz screener data 
 def finvizData():
-    sheet = load_workbook("D:/Programming/Repositories/screenerSettings/highVolumeTickers.xlsx")
-    sheetWrite = sheet.worksheets[0]
     headers = {'User-Agent': 'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_10_1) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/39.0.2171.95 Safari/537.36'}
     urls = ['https://finviz.com/screener.ashx?v=111&f=sh_float_u100,sh_relvol_o10&ft=4&o=volume',"https://finviz.com/screener.ashx?v=111&f=sh_float_u100,sh_relvol_o10&ft=4&o=volume&r=21"]
-    
+
+    #pandas indexing columns and rows we want
     for url in urls:
         screenerPage = requests.get(url, headers = headers).text
         tables = pd.read_html(screenerPage)
         tables = tables[-2] #this is the table we want from the many tables pandas read
-        names = tables.iloc[1:, 1]
+        names = tables.iloc[1:, 1] #I think _: is better than 1: even if do the same thing
         industry = tables.iloc[1:, 4]
         marketCap = tables.iloc[1:,6]
         price = tables.iloc[1:,8]
         change = tables.iloc[1:,9]
-        volume = tables.iloc[1:,10]
+        volume = tables.iloc[1:,10] #[row selection, column selection] BY NUMBER labelled in the pandas table
 
-        startingPoint = startPoint(sheetWrite)
-        tempStartPoint = startingPoint
-        index = 1
-
-        for name in names:
-            sheetWrite.cell(row = 1, column = tempStartPoint).value = names[index] ##iterate each thing here
-            sheetWrite.cell(row = 2, column = tempStartPoint).value = industry[index] ##iterate each thing here
-            sheetWrite.cell(row = 3, column = tempStartPoint).value = date.today() ##iterate each thing here
-            sheetWrite.cell(row = 4, column = tempStartPoint).value = volume[index] ##iterate each thing here
-            sheetWrite.cell(row = 5, column = tempStartPoint).value = marketCap[index] ##iterate each thing here
-            sheetWrite.cell(row = 6, column = tempStartPoint).value = price[index] ##iterate each thing here
-            sheetWrite.cell(row = 7, column = tempStartPoint).value = change[index] ##iterate each thing here
-    
-
-            tempStartPoint += 1
-            index += 1
-        sheet.save(("D:/Programming/Repositories/screenerSettings/highVolumeTickers.xlsx"))
-        
+        dataToAdd = [names, industry, date.today(), volume, marketCap, price, change]
+        writeToExcel(dataToAdd)
+        #writeToSQL(dataToAdd)
+      
+finvizData()
