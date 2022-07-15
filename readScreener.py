@@ -7,14 +7,22 @@ from openpyxl.styles import Color, Fill, Font
 from datetime import date
 import pyodbc
 
+#startPoint()
 #returns the right most column in the excel sheet which is blank
 #this is where we will start inputting new tickers found for the day
+#PARAMETERS: sheetWrite -> the excel sheet we want to find the starting point of
+#RETURNS: NONE
 def startPoint(sheetWrite):
     colNumber = 1
     while sheetWrite.cell(row = 1, column = colNumber).value != None:
         colNumber += 1
     return colNumber
 
+
+#writeToSQL()
+#using data retrieved by finvizData() will insert said values into azure SQL database
+#PARAMETERS: data -> array containing lists of strings/floats/ints
+#RETURNS: NONE
 def writeToSQL(data):
     file = open("D:\Programming\SecretKeysandPass\serverTest.txt")
     password = file.readline()
@@ -31,11 +39,15 @@ def writeToSQL(data):
             cursor.execute(query)
             index += 1
         except pyodbc.IntegrityError:
-            break
+            continue
 
     cursor.commit()
 
 
+#writeToExcel()
+#using data retrieved by finvizData() will write to excel sheet
+#PARAMETERS: data -> array containing lists of strings/floats/ints
+#RETURNS: NONE
 def writeToExcel(data):
     sheet = load_workbook("D:/Programming/Repositories/screenerSettings/highVolumeTickers.xlsx")
     sheetWrite = sheet.worksheets[0]
@@ -56,8 +68,12 @@ def writeToExcel(data):
         startingPoint += 1
     sheet.save(("D:/Programming/Repositories/screenerSettings/highVolumeTickers.xlsx"))
 
-
-#retrieves finviz screener data 
+#finvizData()
+#retrieves finviz screener data by utilizing pandas to read html tables on finviz.com
+#after gaining the data we want, we put it in an array to pass to writeToSQL() and writeToExcel()
+#so we can store the same data in two places as we learn how to work with each better
+#PARAMETERS: NONE
+#RETURNS: NONE
 def finvizData():
     headers = {'User-Agent': 'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_10_1) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/39.0.2171.95 Safari/537.36'}
     urls = ['https://finviz.com/screener.ashx?v=111&f=sh_float_u100,sh_relvol_o10&ft=4&o=volume',"https://finviz.com/screener.ashx?v=111&f=sh_float_u100,sh_relvol_o10&ft=4&o=volume&r=21"]
@@ -67,7 +83,7 @@ def finvizData():
     for url in urls:
         screenerPage = requests.get(url, headers = headers).text
         tables = pd.read_html(screenerPage)
-        tables = tables[-2] #this is the table we want from the many tables pandas read
+        tables = tables[-2] #this is the table we want from the many tables pandas found
         names = tables.iloc[1:, 1] #I think _: is better than 1: even if do the same thing
         industry = tables.iloc[1:, 4]
         marketCap = tables.iloc[1:,6]
