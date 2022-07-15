@@ -1,4 +1,5 @@
 
+from tkinter import EXCEPTION
 import requests
 import pandas as pd
 from openpyxl import load_workbook
@@ -20,17 +21,23 @@ def writeToSQL(data):
     connect = pyodbc.connect('DRIVER={SQL Server};SERVER=jaredsdb.database.windows.net;DATABASE=jaredDateBase;UID=matsonj2013@gmail.com@jaredsdb;PWD='+password) #DATABASE != servername
     cursor = connect.cursor() #THIS WORKS
     names = data[0]
+    index = 1 #start at one cause pandas data doesnt have 0 row
+    #need to esnrue every string has a '' around it so we use.format
+    for name in names:   
+        query = '''INSERT INTO highVolume(ticker,industry,dateFound,volume,mktCap,priceFound,changeWhenFound)
+                VALUES('{ticker}','{industry}','{dateFound}',{volume},'{mktCap}',{priceFound},'{changeWhenFound}')
+                '''.format(ticker = data[0][index], industry =data[1][index], dateFound = data[2], volume = data[3][index], mktCap =data[4][index], priceFound=data[5][index], changeWhenFound=data[6][index])
+        try:
+            cursor.execute(query)
+            index += 1
+        except pyodbc.IntegrityError:
+            break
 
-    # index = 0
-    # for name in names:
-    #     cursor.execute('''INSERT INTO highVolume(ticker, industry, dateFound, volume, mktCap, priceFound
-    #                 VALUES ()
-    #                 )                
-    #                 '''))
+    cursor.commit()
 
 
 def writeToExcel(data):
-    sheet = load_workbook("D:/Programming/Repositories/screenerSettings/test.xlsx")
+    sheet = load_workbook("D:/Programming/Repositories/screenerSettings/highVolumeTickers.xlsx")
     sheetWrite = sheet.worksheets[0]
     startingPoint = startPoint(sheetWrite)
     index = 1 #this index starts at 0 because the pandas dataset does not have a 0th row
@@ -47,14 +54,15 @@ def writeToExcel(data):
         sheetWrite.cell(row = 7, column = startingPoint).value = data[6][index] ##iterate each thing here
         index += 1
         startingPoint += 1
-    sheet.save(("D:/Programming/Repositories/screenerSettings/test.xlsx"))
+    sheet.save(("D:/Programming/Repositories/screenerSettings/highVolumeTickers.xlsx"))
 
 
 #retrieves finviz screener data 
 def finvizData():
     headers = {'User-Agent': 'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_10_1) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/39.0.2171.95 Safari/537.36'}
     urls = ['https://finviz.com/screener.ashx?v=111&f=sh_float_u100,sh_relvol_o10&ft=4&o=volume',"https://finviz.com/screener.ashx?v=111&f=sh_float_u100,sh_relvol_o10&ft=4&o=volume&r=21"]
-
+    #need to put something here to stop potential double writes ^^^
+    
     #pandas indexing columns and rows we want
     for url in urls:
         screenerPage = requests.get(url, headers = headers).text
@@ -68,7 +76,7 @@ def finvizData():
         volume = tables.iloc[1:,10] #[row selection, column selection] BY NUMBER labelled in the pandas table
 
         dataToAdd = [names, industry, date.today(), volume, marketCap, price, change]
-        writeToExcel(dataToAdd)
-        #writeToSQL(dataToAdd)
+        #writeToExcel(dataToAdd)
+        writeToSQL(dataToAdd)
       
 finvizData()

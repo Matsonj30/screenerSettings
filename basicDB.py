@@ -18,7 +18,7 @@ def createTables():
                     dateFound varchar(15),
                     volume int,
                     mktCap varchar(10),
-                    priceFound int,
+                    priceFound float(2),
                     day1 int,
                     day2 int,
                     day3 int,
