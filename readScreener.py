@@ -1,9 +1,6 @@
-
-from tkinter import EXCEPTION
 import requests
 import pandas as pd
 from openpyxl import load_workbook
-from openpyxl.styles import Color, Fill, Font
 from datetime import date
 import pyodbc
 
@@ -13,10 +10,10 @@ import pyodbc
 #PARAMETERS: sheetWrite -> the excel sheet we want to find the starting point of
 #RETURNS: NONE
 def startPoint(sheetWrite):
-    colNumber = 1
-    while sheetWrite.cell(row = 1, column = colNumber).value != None:
-        colNumber += 1
-    return colNumber
+    rowNumber = 1
+    while sheetWrite.cell(row = rowNumber, column = 1).value != None:
+        rowNumber += 1
+    return rowNumber
 
 
 #writeToSQL()
@@ -49,7 +46,7 @@ def writeToSQL(data):
 #PARAMETERS: data -> array containing lists of strings/floats/ints
 #RETURNS: NONE
 def writeToExcel(data):
-    sheet = load_workbook("D:/Programming/Repositories/screenerSettings/highVolumeTickers.xlsx")
+    sheet = load_workbook("D:/Programming/Repositories/screenerSettings/highVolume.xlsx")
     sheetWrite = sheet.worksheets[0]
     startingPoint = startPoint(sheetWrite)
     index = 1 #this index starts at 0 because the pandas dataset does not have a 0th row
@@ -57,16 +54,16 @@ def writeToExcel(data):
     
     #this can be done in less lines but its tricky
     for name in names:
-        sheetWrite.cell(row = 1, column = startingPoint).value = data[0][index] ##iterate each thing here
-        sheetWrite.cell(row = 2, column = startingPoint).value = data[1][index] ##iterate each thing here
-        sheetWrite.cell(row = 3, column = startingPoint).value = date.today() ##iterate each thing here
-        sheetWrite.cell(row = 4, column = startingPoint).value = data[3][index] ##iterate each thing here
-        sheetWrite.cell(row = 5, column = startingPoint).value = data[4][index] ##iterate each thing here
-        sheetWrite.cell(row = 6, column = startingPoint).value = data[5][index] ##iterate each thing here
-        sheetWrite.cell(row = 7, column = startingPoint).value = data[6][index] ##iterate each thing here
+        sheetWrite.cell(row = startingPoint, column = 1).value = data[0][index] ##iterate each thing here
+        sheetWrite.cell(row = startingPoint, column = 2).value = data[1][index] ##iterate each thing here
+        sheetWrite.cell(row = startingPoint, column = 3).value = date.today() ##iterate each thing here
+        sheetWrite.cell(row = startingPoint, column = 4).value = data[3][index] ##iterate each thing here
+        sheetWrite.cell(row = startingPoint, column = 5).value = data[4][index] ##iterate each thing here
+        sheetWrite.cell(row = startingPoint, column = 6).value = data[5][index] ##iterate each thing here
+        sheetWrite.cell(row = startingPoint, column = 7).value = data[6][index] ##iterate each thing here
         index += 1
         startingPoint += 1
-    sheet.save(("D:/Programming/Repositories/screenerSettings/highVolumeTickers.xlsx"))
+    sheet.save(("D:/Programming/Repositories/screenerSettings/highVolume.xlsx"))
 
 #finvizData()
 #retrieves finviz screener data by utilizing pandas to read html tables on finviz.com
@@ -92,7 +89,7 @@ def finvizData():
         volume = tables.iloc[1:,10] #[row selection, column selection] BY NUMBER labelled in the pandas table
 
         dataToAdd = [names, industry, date.today(), volume, marketCap, price, change]
-        #writeToExcel(dataToAdd)
+        writeToExcel(dataToAdd)
         writeToSQL(dataToAdd)
       
 finvizData()
