@@ -92,4 +92,3 @@ def finvizData():
         writeToExcel(dataToAdd)
         writeToSQL(dataToAdd)
       
-finvizData()
