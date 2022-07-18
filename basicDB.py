@@ -1,4 +1,8 @@
 import pyodbc
+
+#FILE to test basic DB commands in python
+
+
 server = 'jaredsdb.database.windows.net'
 database = 'jaredsdb'
 username = 'matsonj2013@gmail.com'

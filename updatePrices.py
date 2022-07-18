@@ -5,6 +5,11 @@ from yahoo_fin.stock_info import *
 from datetime import date
 from readScreener import finvizData
 
+
+#writeToExcel()
+#will grab live price data of tickers that were previously scanned by finvizData() and put them into the Azure DB jaredsDB
+#PARAMETERS: NONE
+#RETURNS: NONE
 def sqlUpdate():
     file = open("D:\Programming\SecretKeysandPass\serverTest.txt")
     password = file.readline()
@@ -30,6 +35,11 @@ def sqlUpdate():
         
            
 
+
+#writeToExcel()
+#will grab live price data of tickers that were previously scanned by finvizData() and put them into the excel sheet highVolume.xslx
+#PARAMETERS: NONE
+#RETURNS: NONE
 def excelUpdate():
     sheet = load_workbook("D:/Programming/Repositories/screenerSettings/highVolume.xlsx")
     sheetWrite = sheet.worksheets[0] #starting point??
@@ -43,5 +53,5 @@ def excelUpdate():
         index += 1
     sheet.save("D:/Programming/Repositories/screenerSettings/highVolume.xlsx")
 sqlUpdate()
-#excelUpdate()
-#finvizData()
+excelUpdate()
+finvizData()
