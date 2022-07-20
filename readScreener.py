@@ -4,6 +4,10 @@ from openpyxl import load_workbook
 from datetime import date
 import pyodbc
 
+#BUGS -> Excel can write twice if the finviz screener has less than two pages of results, the second url
+#will return the first ticker even if it doesnt belong on the second page
+
+
 #startPoint()
 #returns the right most column in the excel sheet which is blank
 #this is where we will start inputting new tickers found for the day
@@ -26,16 +30,20 @@ def writeToSQL(data):
     connect = pyodbc.connect('DRIVER={SQL Server};SERVER=jaredsdb.database.windows.net;DATABASE=jaredDateBase;UID=matsonj2013@gmail.com@jaredsdb;PWD='+password) #DATABASE != servername
     cursor = connect.cursor() #THIS WORKS
     names = data[0]
-    index = 1 #start at one cause pandas data doesnt have 0 row
+    index = 0 
     #need to esnrue every string has a '' around it so we use.format
+    print("HERR")
     for name in names:   
+        index += 1
         query = '''INSERT INTO highVolume(ticker,industry,dateFound,volume,mktCap,priceFound,changeWhenFound)
                 VALUES('{ticker}','{industry}','{dateFound}',{volume},'{mktCap}',{priceFound},'{changeWhenFound}')
                 '''.format(ticker = data[0][index], industry =data[1][index], dateFound = data[2], volume = data[3][index], mktCap =data[4][index], priceFound=data[5][index], changeWhenFound=data[6][index])
+        print(query)
         try:
             cursor.execute(query)
-            index += 1
+            print("EXECUTED")
         except pyodbc.IntegrityError:
+            print(pyodbc.IntegrityError)
             continue
 
     cursor.commit()
@@ -91,4 +99,4 @@ def finvizData():
         dataToAdd = [names, industry, date.today(), volume, marketCap, price, change]
         writeToExcel(dataToAdd)
         writeToSQL(dataToAdd)
-      
+
