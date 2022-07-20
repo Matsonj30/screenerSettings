@@ -18,7 +18,7 @@ def createTables():
     cursor.execute("DROP TABLE highVolume")
     cursor.execute('''CREATE TABLE highVolume(
                     ticker varchar(8) primary key,
-                    industry varchar(30),
+                    industry varchar(50),
                     dateFound varchar(15),
                     volume int,
                     mktCap varchar(10),
