@@ -32,18 +32,14 @@ def writeToSQL(data):
     names = data[0]
     index = 0 
     #need to esnrue every string has a '' around it so we use.format
-    print("HERR")
     for name in names:   
         index += 1
         query = '''INSERT INTO highVolume(ticker,industry,dateFound,volume,mktCap,priceFound,changeWhenFound)
                 VALUES('{ticker}','{industry}','{dateFound}',{volume},'{mktCap}',{priceFound},'{changeWhenFound}')
                 '''.format(ticker = data[0][index], industry =data[1][index], dateFound = data[2], volume = data[3][index], mktCap =data[4][index], priceFound=data[5][index], changeWhenFound=data[6][index])
-        print(query)
         try:
             cursor.execute(query)
-            print("EXECUTED")
         except pyodbc.IntegrityError:
-            print(pyodbc.IntegrityError)
             continue
 
     cursor.commit()
