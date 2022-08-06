@@ -1,4 +1,3 @@
-from logging import exception
 from openpyxl import load_workbook
 import pyodbc
 from yahoo_fin.stock_info import *
@@ -26,7 +25,10 @@ def sqlUpdate():
                                  SET  {dayToUpdate} ='{tickerLiveValue}'
                                  WHERE ticker = '{tickerName}'
                               '''.format(dayToUpdate = 'day'+str(i), tickerLiveValue = round(get_live_price(row[0]),2), tickerName = row[0])
-                cursor.execute(updateQuery)
+                try:
+                    cursor.execute(updateQuery)
+                except Exception:
+                    print("Ticker does not exist " + row[0])
                 break
     cursor.commit()
                                 
